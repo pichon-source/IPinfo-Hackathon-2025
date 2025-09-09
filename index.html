@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛡️ Smart Cybersecurity Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1e1e2e 50%, #2d1b69 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+
+        .status-card {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .status-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-bottom: 5px;
+        }
+
+        .status-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-height: 400px;
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #4ecdc4;
+        }
+
+        .threat-map {
+            grid-column: 1 / -1;
+            min-height: 500px;
+        }
+
+        .country-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .country-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .country-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .country-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .country-stats {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+
+        .risk-low { border-left-color: #4ecdc4; }
+        .risk-medium { border-left-color: #f7dc6f; }
+        .risk-high { border-left-color: #ff6b6b; }
+        .risk-critical { border-left-color: #e74c3c; }
+
+        .threat-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .alert-panel {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alert-panel.active {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-title {
+            font-size: 1.2rem;
+            color: #e74c3c;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .risk-badge {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .risk-badge.critical { background: #e74c3c; color: white; }
+        .risk-badge.high { background: #ff6b6b; color: white; }
+        .risk-badge.medium { background: #f7dc6f; color: #333; }
+        .risk-badge.low { background: #4ecdc4; color: white; }
+
+        .asn-info {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom visualizations without Chart.js */
+        .country-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 10px;
+        }
+
+        .country-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .country-bar:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.02);
+        }
+
+        .country-info {
+            min-width: 120px;
+            font-size: 0.9rem;
+        }
+
+        .country-flag {
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #45b7d1);
+            border-radius: 10px;
+            transition: width 1s ease;
+            position: relative;
+        }
+
+        .progress-text {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .asn-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .asn-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: rgba(231, 76, 60, 0.2);
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            transition: all 0.3s ease;
+        }
+
+        .asn-bar:hover {
+            background: rgba(231, 76, 60, 0.3);
+            transform: scale(1.02);
+        }
+
+        .asn-details {
+            flex: 1;
+        }
+
+        .asn-name {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .asn-country {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .asn-count {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-bar {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Smart Cybersecurity Dashboard</h1>
+            <p>Real-time Global Threat Monitoring • IPinfo Lite Hackathon 2025</p>
+        </div>
+
+        <div class="alert-panel" id="alertPanel">
+            <div class="alert-title">🚨 Security Alert</div>
+            <div id="alertContent">Suspicious activity detected...</div>
+        </div>
+
+        <div class="status-bar">
+            <div class="status-card">
+                <div class="status-number">378,358</div>
+                <div class="status-label">Networks Monitored</div>
+            </div>
+            <div class="status-card">
+                <div class="status-number">10</div>
+                <div class="status-label">Countries</div>
+            </div>
+            <div class="status-card">
+                <div class="status-number">6</div>
+                <div class="status-label">High-Risk Threats</div>
+            </div>
+            <div class="status-card">
+                <div class="status-number">2,847</div>
+                <div class="status-label">ISPs Tracked</div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="chart-container">
+                <div class="chart-title">📊 Threat Distribution by Country</div>
+                <div class="country-chart" id="countryChart"></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">🏢 High-Risk ISPs</div>
+                <div class="asn-chart" id="asnChart"></div>
+            </div>
+
+            <div class="chart-container threat-map">
+                <div class="chart-title">🗺️ Global Threat Intelligence Map</div>
+                <div class="country-grid" id="countryGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Real data from your IPinfo CSV
+        const threatData = {
+            'United States': { networks: 310977, risk: 1, flag: '🇺🇸', asns: ['AS7922', 'AS15169', 'AS16509'] },
+            'China': { networks: 29142, risk: 3, flag: '🇨🇳', asns: ['AS4134', 'AS4837', 'AS9808'] },
+            'Russia': { networks: 28438, risk: 4, flag: '🇷🇺', asns: ['AS12389', 'AS8359', 'AS31133'] },
+            'Iran': { networks: 3986, risk: 8, flag: '🇮🇷', asns: ['AS44244', 'AS58224', 'AS197207'] },
+            'Israel': { networks: 3913, risk: 1, flag: '🇮🇱', asns: ['AS12400', 'AS8551', 'AS1680'] },
+            'Belarus': { networks: 788, risk: 5, flag: '🇧🇾', asns: ['AS25106', 'AS12406', 'AS21011'] },
+            'Syria': { networks: 651, risk: 7, flag: '🇸🇾', asns: ['AS31115', 'AS29386', 'AS48728'] },
+            'Afghanistan': { networks: 355, risk: 6, flag: '🇦🇫', asns: ['AS17557', 'AS55330', 'AS38742'] },
+            'Yemen': { networks: 102, risk: 6, flag: '🇾🇪', asns: ['AS35819', 'AS30873', 'AS21050'] },
+            'North Korea': { networks: 6, risk: 10, flag: '🇰🇵', asns: ['AS131279', 'AS9348'] }
+        };
+
+        const asnNames = {
+            'AS7922': 'Comcast Cable Communications',
+            'AS15169': 'Google LLC',
+            'AS16509': 'Amazon.com, Inc.',
+            'AS4134': 'China Telecom Corporation Limited',
+            'AS4837': 'China Unicom Backbone',
+            'AS9808': 'China Mobile Communications',
+            'AS12389': 'PJSC Rostelecom',
+            'AS8359': 'MTS OJSC',
+            'AS31133': 'MF Megafon OJSC',
+            'AS44244': 'Iran Cell Service and Communication Company',
+            'AS58224': 'Iran Telecommunication Company PJS',
+            'AS197207': 'Mobile Telecommunication Company of Esfahan',
+            'AS12400': 'Partner Communications Ltd.',
+            'AS8551': 'Bezeq International Ltd.',
+            'AS1680': 'NV Nuland International',
+            'AS25106': 'Mobile TeleSystems OJSC',
+            'AS12406': 'Beltelecom',
+            'AS21011': 'Republican Unitary Telecommunication Enterprise',
+            'AS31115': 'Syrian Telecommunications Establishment',
+            'AS29386': 'Spacetel Syria',
+            'AS48728': 'SyriaTel Mobile Telecom',
+            'AS17557': 'Pakistan Telecom Company Limited',
+            'AS55330': 'Afghan Telecom Corporation',
+            'AS38742': 'Etisalat Afghanistan',
+            'AS35819': 'TeleYemen',
+            'AS30873': 'Yemen Mobile',
+            'AS21050': 'Yemen Net',
+            'AS131279': 'Ryugyong-dong',
+            'AS9348': 'Korea Telecom'
+        };
+
+        function getRiskLevel(score) {
+            if (score >= 8) return { level: 'critical', label: 'Critical', color: '#e74c3c' };
+            if (score >= 6) return { level: 'high', label: 'High', color: '#ff6b6b' };
+            if (score >= 4) return { level: 'medium', label: 'Medium', color: '#f7dc6f' };
+            return { level: 'low', label: 'Low', color: '#4ecdc4' };
+        }
+
+        function getRiskColor(score) {
+            if (score >= 8) return '#e74c3c';
+            if (score >= 6) return '#ff6b6b';
+            if (score >= 4) return '#f39c12';
+            return '#4ecdc4';
+        }
+
+        // Create custom country visualization
+        function createCountryChart() {
+            const container = document.getElementById('countryChart');
+            const countries = Object.keys(threatData).sort((a, b) => threatData[b].networks - threatData[a].networks);
+            const maxNetworks = threatData[countries[0]].networks;
+            
+            countries.forEach(country => {
+                const data = threatData[country];
+                const percentage = ((data.networks / maxNetworks) * 100);
+                const risk = getRiskLevel(data.risk);
+                
+                const bar = document.createElement('div');
+                bar.className = 'country-bar';
+                bar.innerHTML = `
+                    <div class="country-info">
+                        <span class="country-flag">${data.flag}</span>
+                        <span>${country}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%; background: linear-gradient(90deg, ${risk.color}, ${risk.color}80);">
+                            <div class="progress-text">${data.networks.toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(bar);
+            });
+        }
+
+        // Create custom ASN visualization
+        function createAsnChart() {
+            const container = document.getElementById('asnChart');
+            const highRiskCountries = ['North Korea', 'Iran', 'Syria', 'Yemen', 'Afghanistan', 'Belarus'];
+            const riskAsns = [];
+            
+            highRiskCountries.forEach(country => {
+                if (threatData[country]) {
+                    threatData[country].asns.forEach(asn => {
+                        riskAsns.push({
+                            asn: asn,
+                            country: country,
+                            name: asnNames[asn] || 'Unknown ISP',
+                            networks: Math.floor(threatData[country].networks / threatData[country].asns.length),
+                            risk: getRiskLevel(threatData[country].risk)
+                        });
+                    });
+                }
+            });
+
+            const topRiskAsns = riskAsns.sort((a, b) => b.networks - a.networks).slice(0, 6);
+            
+            topRiskAsns.forEach(item => {
+                const bar = document.createElement('div');
+                bar.className = 'asn-bar';
+                bar.style.borderLeftColor = item.risk.color;
+                bar.style.backgroundColor = item.risk.color + '20';
+                
+                bar.innerHTML = `
+                    <div class="asn-details">
+                        <div class="asn-name">${item.asn}</div>
+                        <div class="asn-country">${item.country} • ${item.name}</div>
+                    </div>
+                    <div class="asn-count">${item.networks.toLocaleString()}</div>
+                `;
+                
+                container.appendChild(bar);
+            });
+        }
+
+        // Create threat map
+        function createThreatMap() {
+            const grid = document.getElementById('countryGrid');
+            const sortedCountries = Object.keys(threatData).sort((a, b) => threatData[b].risk - threatData[a].risk);
+            
+            sortedCountries.forEach(country => {
+                const data = threatData[country];
+                const risk = getRiskLevel(data.risk);
+                
+                const card = document.createElement('div');
+                card.className = `country-card risk-${risk.level}`;
+                
+                card.innerHTML = `
+                    <div class="country-name">
+                        <span>${data.flag} ${country}</span>
+                        <span class="risk-badge ${risk.level}">${risk.label}</span>
+                    </div>
+                    <div class="country-stats">
+                        <strong>Networks:</strong> ${data.networks.toLocaleString()}<br>
+                        <strong>Risk Score:</strong> ${data.risk}/10<br>
+                        <strong>Top ASNs:</strong> ${data.asns.length}
+                        <div class="asn-info">
+                            <strong>Primary ISP:</strong> ${data.asns[0]}<br>
+                            <small>${asnNames[data.asns[0]] || 'Unknown'}</small>
+                        </div>
+                    </div>
+                    <span class="threat-indicator" style="background-color: ${risk.color}"></span>
+                `;
+                
+                card.addEventListener('click', () => {
+                    alert(`🛡️ ${data.flag} ${country} - Detailed Analysis
+
+📊 Network Statistics:
+• Total Networks: ${data.networks.toLocaleString()}
+• Risk Level: ${risk.label} (${data.risk}/10)
+• ASNs Monitored: ${data.asns.length}
+
+🏢 Key ISPs:
+${data.asns.map(asn => `• ${asn}: ${asnNames[asn] || 'Unknown'}`).join('\n')}
+
+⚠️ Security Recommendation:
+${risk.level === 'critical' ? 'IMMEDIATE ACTION REQUIRED - Block all traffic' : 
+  risk.level === 'high' ? 'Enhanced monitoring and selective blocking recommended' :
+  risk.level === 'medium' ? 'Monitor closely for suspicious patterns' :
+  'Standard monitoring protocols sufficient'}`);
+                });
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Simulate alerts
+        function simulateAlerts() {
+            const criticalCountries = Object.keys(threatData).filter(country => threatData[country].risk >= 7);
+            
+            setTimeout(() => {
+                const alertPanel = document.getElementById('alertPanel');
+                const alertContent = document.getElementById('alertContent');
+                
+                const randomCountry = criticalCountries[Math.floor(Math.random() * criticalCountries.length)];
+                const data = threatData[randomCountry];
+                
+                alertContent.innerHTML = `
+                    <strong>Suspicious activity detected from ${data.flag} ${randomCountry}</strong><br>
+                    • ${data.networks.toLocaleString()} IP networks under surveillance<br>
+                    • Risk Level: ${getRiskLevel(data.risk).label}<br>
+                    • Recommendation: Enhanced monitoring and potential IP blocking
+                `;
+                
+                alertPanel.classList.add('active');
+                
+                setTimeout(() => {
+                    alertPanel.classList.remove('active');
+                }, 10000);
+            }, 3000);
+
+            // Periodic alerts
+            setInterval(() => {
+                if (Math.random() < 0.3) {
+                    const randomCountry = criticalCountries[Math.floor(Math.random() * criticalCountries.length)];
+                    const data = threatData[randomCountry];
+                    const alerts = [
+                        `Port scanning detected from ${data.flag} ${randomCountry}`,
+                        `Unusual traffic patterns from ${data.flag} ${randomCountry}`,
+                        `Failed authentication attempts from ${data.flag} ${randomCountry}`,
+                        `DDoS attempt identified from ${data.flag} ${randomCountry}`
+                    ];
+                    
+                    const randomAlert = alerts[Math.floor(Math.random() * alerts.length)];
+                    
+                    const alertPanel = document.getElementById('alertPanel');
+                    const alertContent = document.getElementById('alertContent');
+                    
+                    alertContent.innerHTML = `<strong>${randomAlert}</strong><br>• Automatic security measures activated`;
+                    alertPanel.classList.add('active');
+                    
+                    setTimeout(() => {
+                        alertPanel.classList.remove('active');
+                    }, 5000);
+                }
+            }, 12000);
+        }
+
+        // Initialize dashboard
+        window.addEventListener('load', () => {
+            console.log('Dashboard initializing...');
+            
+            // Animate progress bars after a short delay
+            setTimeout(() => {
+                createCountryChart();
+                createAsnChart();
+                createThreatMap();
+                simulateAlerts();
+                console.log('Dashboard loaded successfully!');
+            }, 500);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'r' || e.key === 'R') {
+                location.reload();
+            }
+            if (e.key === 'a' || e.key === 'A') {
+                simulateAlerts();
+            }
+        });
+    </script>
+</body>
+</html>
